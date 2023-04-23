@@ -1,19 +1,21 @@
 package mx.simio.transaction;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface TransactionService {
 
-  void createTransaction(int userId, BigDecimal amount, String description);
+  Transaction createTransaction(int userId, BigDecimal amount, String description);
 
-  void readTransaction(UUID transactionId);
+  Transaction readTransaction(UUID transactionId);
 
-  void readUserTransactions(int userId);
+  List<Transaction> readUserTransactions(int userId);
 
-  void sumUserTransactions(int userId);
+  BigDecimal sumUserTransactions(int userId);
 
-  void readRandomTransaction();
+  Transaction readRandomTransaction();
 
-  void generateReport();
+  List<TransactionReport> generateReport();
 }

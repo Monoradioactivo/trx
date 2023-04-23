@@ -25,38 +25,47 @@ public class TransactionServiceImpl implements TransactionService {
    * @param userId      The user id
    * @param amount      The amount
    * @param description The description
+   * @return The transaction
    */
   @Override
-  public void createTransaction(int userId, BigDecimal amount, String description) {
+  public Transaction createTransaction(int userId, BigDecimal amount, String description) {
     Transaction transaction = new Transaction(userId, amount, description);
     transactions.put(transaction.getId(), transaction);
 
     System.out.println("Transaction created: " + transaction);
+
+    return transaction;
   }
 
   /**
    * Reads a transaction given its UUID.
    *
    * @param transactionId The transaction id
+   * @return The transaction
    */
   @Override
-  public void readTransaction(UUID transactionId) {
-    transactions.forEach((k, v) -> {
-      if (v.getId().equals(transactionId)) {
-        System.out.println("Transaction found: " + v);
-      } else {
-        System.out.printf("Transaction with id %s not found", transactionId);
-      }
-    });
+  public Transaction readTransaction(UUID transactionId) {
+    Optional<Transaction> result = transactions.values().stream()
+        .filter(v -> v.getId().equals(transactionId))
+        .findFirst();
+
+    if (result.isPresent()) {
+      System.out.println("Transaction found: " + result.get());
+      return result.get();
+    } else {
+      System.out.printf("Transaction with id %s not found", transactionId);
+      return null;
+    }
   }
 
   /**
    * Reads all transactions for a given user.
    *
    * @param userId The user id
+   * @return A list of transactions
    */
   @Override
-  public void readUserTransactions(int userId) {
+  public List<Transaction> readUserTransactions(int userId) {
     List<Transaction> userTransactions = new ArrayList<>();
     transactions.forEach((k, v) -> {
       if (v.getUserId() == userId) {
@@ -69,15 +78,18 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     System.out.println("User transactions: " + userTransactions);
+
+    return userTransactions;
   }
 
   /**
    * Sums all transactions for a given user.
    *
    * @param userId The user id
+   * @return The sum of all transactions for a given user
    */
   @Override
-  public void sumUserTransactions(int userId) {
+  public BigDecimal sumUserTransactions(int userId) {
     List<BigDecimal> amounts = new ArrayList<>();
     transactions.forEach((k, v) -> {
       if (v.getUserId() == userId) {
@@ -88,30 +100,36 @@ public class TransactionServiceImpl implements TransactionService {
     BigDecimal sum = amounts.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
 
     System.out.println("User transactions sum: " + sum);
+    return sum;
   }
 
   /**
    * Reads a random transaction.
+   *
+   * @return The transaction
    */
   @Override
-  public void readRandomTransaction() {
+  public Transaction readRandomTransaction() {
     List<Transaction> transactionList = new ArrayList<>(transactions.values());
     Collections.shuffle(transactionList);
     Optional<Transaction> randomTransaction = transactionList.stream().findFirst();
 
     if (randomTransaction.isEmpty()) {
       System.out.println("No transaction found");
+      return null;
     } else {
       System.out.println("Random transaction: " + randomTransaction.get());
+      return randomTransaction.get();
     }
-
   }
 
   /**
    * Generates a report of transactions per week.
+   *
+   * @return A list of transaction reports
    */
   @Override
-  public void generateReport() {
+  public List<TransactionReport> generateReport() {
     List<Transaction> transactionList = new ArrayList<>(transactions.values());
     Map<LocalDate, List<Transaction>> transactionsByWeek = transactionList.stream()
         .collect(Collectors.groupingBy(
@@ -128,5 +146,6 @@ public class TransactionServiceImpl implements TransactionService {
         .collect(Collectors.toList());
 
     System.out.println(reports);
+    return reports;
   }
 }
